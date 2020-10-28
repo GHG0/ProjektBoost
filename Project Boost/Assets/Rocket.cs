@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+
 
 public class Rocket : MonoBehaviour{
     // Start is called before the first frame update
@@ -8,6 +8,17 @@ public class Rocket : MonoBehaviour{
     AudioSource audio;
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
+    [SerializeField] ParticleSystem mainEngine;
+    [SerializeField] AudioClip deathsound;
+    [SerializeField] AudioClip nextlevelsound;
+    [SerializeField] ParticleSystem mainEngine;
+    [SerializeField] ParticleSystem deathsound;
+    [SerializeField] ParticleSystem nextlevelsound;
+// TODO middle of 28
+
+
+    enum State {Alive, Dying, Tran}
+    State state = State.Alive;
 
     void Start(){
         rigidbody = GetComponent<Rigidbody>();
@@ -16,10 +27,10 @@ public class Rocket : MonoBehaviour{
 
     // Update is called once per frame
     void Update(){
-    	rotate();
-    	thrust();
-
-        print("update");
+    	if (state == State.Alive){
+    		rotate();
+    		thrust();
+		}
     }
     private void rotate(){
     	rigidbody.freezeRotation = true; //take manual controll
@@ -32,27 +43,40 @@ public class Rocket : MonoBehaviour{
 
     	}
     	rigidbody.freezeRotation = false;
-    } 
+    }
     private void thrust(){
     	if(Input.GetKey(KeyCode.Space)){
     		rigidbody.AddRelativeForce(Vector3.up*mainThrust);
     		if(!audio.isPlaying){
-    			audio.Play();
+    			audio.PlayOneShot(mainEngine);
     		}
     	}else{
     		audio.Stop();
     	}
 	}
 	void OnCollisionEnter(Collision collision){
+		if (state != State.Alive){return;}
 		switch (collision.gameObject.tag){
 			case "Friendly":
-				//do nothing
-				print("ok");
+				break;
+			case "Finish":
+				state = State.Tran;
+				Invoke("LoadNextScene", 1f);
+				audio.Stop();
+				audio.PlayOneShot(nextlevelsound);
 				break;
 			default:
-				print("Dead");
-				//kill/reload
+				state = State.Dying;
+				Invoke("Death", 1f);
+				audio.Stop();
+				audio.PlayOneShot(deathsound);
 				break;
 		}
+	}
+	void Death(){
+		SceneManager.LoadScene(0);
+	}
+	void LoadNextScene(){
+		SceneManager.LoadScene(1); // allow for more than 2 levels
 	}
 }//serialize mainthrust
