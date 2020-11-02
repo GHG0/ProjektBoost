@@ -8,12 +8,12 @@ public class Rocket : MonoBehaviour{
     AudioSource audio;
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
-    [SerializeField] ParticleSystem mainEngine;
+    [SerializeField] AudioClip mainEngine;
     [SerializeField] AudioClip deathsound;
     [SerializeField] AudioClip nextlevelsound;
-    [SerializeField] ParticleSystem mainEngine;
-    [SerializeField] ParticleSystem deathsound;
-    [SerializeField] ParticleSystem nextlevelsound;
+    [SerializeField] ParticleSystem engineP;
+    [SerializeField] ParticleSystem deathP;
+    [SerializeField] ParticleSystem nextP;
 // TODO middle of 28
 
 
@@ -47,11 +47,14 @@ public class Rocket : MonoBehaviour{
     private void thrust(){
     	if(Input.GetKey(KeyCode.Space)){
     		rigidbody.AddRelativeForce(Vector3.up*mainThrust);
+
     		if(!audio.isPlaying){
     			audio.PlayOneShot(mainEngine);
     		}
+    		engineP.Play();
     	}else{
     		audio.Stop();
+    		engineP.Stop();
     	}
 	}
 	void OnCollisionEnter(Collision collision){
@@ -64,19 +67,23 @@ public class Rocket : MonoBehaviour{
 				Invoke("LoadNextScene", 1f);
 				audio.Stop();
 				audio.PlayOneShot(nextlevelsound);
+				nextP.Play();
 				break;
 			default:
 				state = State.Dying;
 				Invoke("Death", 1f);
 				audio.Stop();
 				audio.PlayOneShot(deathsound);
+				deathP.Play();
 				break;
 		}
 	}
 	void Death(){
 		SceneManager.LoadScene(0);
+		deathP.Stop();
 	}
 	void LoadNextScene(){
 		SceneManager.LoadScene(1); // allow for more than 2 levels
+		nextP.Stop();
 	}
 }//serialize mainthrust
