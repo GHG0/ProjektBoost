@@ -8,6 +8,7 @@ public class Rocket : MonoBehaviour{
     AudioSource audio;
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
+    [SerializeField] float levelLoaddelay = 2f;
     [SerializeField] AudioClip mainEngine;
     [SerializeField] AudioClip deathsound;
     [SerializeField] AudioClip nextlevelsound;
@@ -19,7 +20,7 @@ public class Rocket : MonoBehaviour{
 
     enum State {Alive, Dying, Tran}
     State state = State.Alive;
-
+    bool collisionsenabled = true;
     void Start(){
         rigidbody = GetComponent<Rigidbody>();
         audio = GetComponent<AudioSource>();
@@ -30,7 +31,15 @@ public class Rocket : MonoBehaviour{
     	if (state == State.Alive){
     		rotate();
     		thrust();
+    		debug();
 		}
+    }
+    private void debug(){
+    	if(Input.GetKeyDown(KeyCode.L)){
+    		LoadNextScene();
+    	}else if(Input.GetKeyDown(KeyCode.C)){
+    		collisionsenabled = !collisionsenabled;
+    	}
     }
     private void rotate(){
     	rigidbody.freezeRotation = true; //take manual controll
@@ -58,20 +67,20 @@ public class Rocket : MonoBehaviour{
     	}
 	}
 	void OnCollisionEnter(Collision collision){
-		if (state != State.Alive){return;}
+		if (state != State.Alive || !collisionsenabled){return;}
 		switch (collision.gameObject.tag){
 			case "Friendly":
 				break;
 			case "Finish":
 				state = State.Tran;
-				Invoke("LoadNextScene", 1f);
+				Invoke("LoadNextScene", levelLoaddelay);
 				audio.Stop();
 				audio.PlayOneShot(nextlevelsound);
 				nextP.Play();
 				break;
 			default:
 				state = State.Dying;
-				Invoke("Death", 1f);
+				Invoke("Death", levelLoaddelay);
 				audio.Stop();
 				audio.PlayOneShot(deathsound);
 				deathP.Play();
