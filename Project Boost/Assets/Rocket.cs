@@ -31,7 +31,7 @@ public class Rocket : MonoBehaviour{
     	if (state == State.Alive){
     		rotate();
     		thrust();
-    		debug();
+    		if(Debug.isDebugBuild){debug();}
 		}
     }
     private void debug(){
@@ -42,7 +42,7 @@ public class Rocket : MonoBehaviour{
     	}
     }
     private void rotate(){
-    	rigidbody.freezeRotation = true; //take manual controll
+    	rigidbody.angularVelocity = Vector3.zero; //no rotation
     	float rotationtf = rcsThrust * Time.deltaTime;
     	if(Input.GetKey(KeyCode.A)){
     		transform.Rotate(Vector3.forward*rotationtf);
@@ -51,7 +51,6 @@ public class Rocket : MonoBehaviour{
     		transform.Rotate(-Vector3.forward*rotationtf);
 
     	}
-    	rigidbody.freezeRotation = false;
     }
     private void thrust(){
     	if(Input.GetKey(KeyCode.Space)){
@@ -67,7 +66,7 @@ public class Rocket : MonoBehaviour{
     	}
 	}
 	void OnCollisionEnter(Collision collision){
-		if (state != State.Alive || !collisionsenabled){return;}
+		if (state !=  || !collisionsenabled){return;}
 		switch (collision.gameObject.tag){
 			case "Friendly":
 				break;
@@ -92,7 +91,14 @@ public class Rocket : MonoBehaviour{
 		deathP.Stop();
 	}
 	void LoadNextScene(){
-		SceneManager.LoadScene(1); // allow for more than 2 levels
+		int currentsceneindex = SceneManager.GetActiveScene().buildIndex;
+		print(currentsceneindex);
+
+		int nextlevel = currentsceneindex +1 ;
+		if (nextlevel == SceneManager.sceneCountInBuildSettings){
+			nextlevel = 0;
+		}
+		SceneManager.LoadScene(currentsceneindex + 1); // allow for more than 2 levels
 		nextP.Stop();
-	}
+	} 
 }//serialize mainthrust
